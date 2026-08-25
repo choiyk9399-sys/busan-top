@@ -7,8 +7,9 @@ import { XMLParser } from "fast-xml-parser";
  */
 export const CINII_KEYWORDS: { label: string; query: string }[] = [
   { label: "반도체", query: "半導体" },
-  { label: "실리콘 단결정 성장", query: "シリコン単結晶成長" },
-  { label: "실리콘 단결정 웨이퍼 가공", query: "シリコン単結晶ウェハ加工" },
+  // 붙여쓴 복합어로 검색하면 결과가 거의 안 나와서, 단어를 띄어써서(AND 검색) 넓게 찾는다.
+  { label: "실리콘 단결정 성장", query: "シリコン 単結晶 成長" },
+  { label: "실리콘 단결정 웨이퍼 가공", query: "シリコン 単結晶 ウェハ 加工" },
 ];
 
 export type CiniiRawPaper = {
