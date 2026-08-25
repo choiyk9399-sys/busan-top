@@ -10,6 +10,12 @@ export const maxDuration = 60;
 // 한 번 실행할 때 번역에 쓰는 논문 수를 제한해서 AI 비용을 예측 가능한 범위로 묶어둔다.
 const MAX_TRANSLATE_PER_RUN = 60;
 const COUNT_PER_KEYWORD = 30;
+// CiNii가 짧은 시간에 연속 요청을 보내면 503으로 막는 경우가 있어 키워드 사이에 살짝 쉬어준다.
+const DELAY_BETWEEN_KEYWORDS_MS = 3000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
@@ -31,9 +37,12 @@ export async function GET(req: NextRequest) {
   const summary: Record<string, unknown>[] = [];
   let translateBudgetLeft = MAX_TRANSLATE_PER_RUN;
 
-  for (const kw of CINII_KEYWORDS) {
+  for (const [index, kw] of CINII_KEYWORDS.entries()) {
+    if (index > 0) await sleep(DELAY_BETWEEN_KEYWORDS_MS);
+
     let fetchedCount = 0;
     let newCount = 0;
+    let insertedCount = 0;
     let translatedCount = 0;
     let status = "success";
     let errorMessage: string | null = null;
@@ -93,6 +102,10 @@ export async function GET(req: NextRequest) {
 
           if (insertErr) {
             console.error("insert failed", paper.ciniiUrl, insertErr.message);
+            status = "error";
+            errorMessage = `저장 실패: ${insertErr.message}`;
+          } else {
+            insertedCount += 1;
           }
         }
       }
@@ -102,19 +115,21 @@ export async function GET(req: NextRequest) {
       console.error(`CiNii ingest failed for keyword "${kw.label}"`, e);
     }
 
-    await supabase.from("cinii_sync_log").insert({
+    const { error: logErr } = await supabase.from("cinii_sync_log").insert({
       keyword: kw.label,
       fetched_count: fetchedCount,
-      new_count: newCount,
+      new_count: insertedCount,
       translated_count: translatedCount,
       status,
       error_message: errorMessage,
     });
+    if (logErr) console.error("sync_log insert failed", logErr.message);
 
     summary.push({
       keyword: kw.label,
       fetchedCount,
       newCount,
+      insertedCount,
       translatedCount,
       status,
       errorMessage,
