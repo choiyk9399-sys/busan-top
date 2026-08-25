@@ -75,8 +75,8 @@ export default async function Home() {
           >
             CiNii Research
           </a>
-          에서 반도체, 실리콘 단결정 성장, 실리콘 단결정 웨이퍼 가공·제작 관련 논문을 매주
-          자동으로 모아 한국어로 번역해 보여줍니다.
+          에서 {CINII_KEYWORDS.map((k) => k.label).join(", ")} 관련 논문을 매주 자동으로
+          모아 한국어로 번역해 보여줍니다.
         </p>
       </header>
 

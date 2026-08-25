@@ -6,10 +6,11 @@ import { XMLParser } from "fast-xml-parser";
  * key: 화면에 보여줄 한국어 라벨, value: 실제 검색에 쓰는 일본어 키워드
  */
 export const CINII_KEYWORDS: { label: string; query: string }[] = [
-  { label: "반도체", query: "半導体" },
+  { label: "실리콘 단결정(영문)", query: "silicon single crystal" },
   // 붙여쓴 복합어로 검색하면 결과가 거의 안 나와서, 단어를 띄어써서(AND 검색) 넓게 찾는다.
-  { label: "실리콘 단결정 성장", query: "シリコン 単結晶 成長" },
-  { label: "실리콘 단결정 웨이퍼 가공", query: "シリコン 単結晶 ウェハ 加工" },
+  { label: "실리콘 단결정", query: "シリコン 単結晶" },
+  { label: "실리콘 웨이퍼", query: "シリコン ウェハ" },
+  { label: "실리콘 웨이퍼 연마", query: "シリコン ウェハ 研磨" },
 ];
 
 export type CiniiRawPaper = {
