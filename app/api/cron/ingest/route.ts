@@ -15,7 +15,11 @@ function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
   const authHeader = req.headers.get("authorization");
-  return authHeader === `Bearer ${secret}`;
+  if (authHeader === `Bearer ${secret}`) return true;
+  // Vercel Cron은 Authorization 헤더로 인증하지만, 사람이 브라우저에서
+  // 수동으로 한 번 실행해볼 수 있도록 ?secret=... 쿼리파라미터도 허용한다.
+  const querySecret = req.nextUrl.searchParams.get("secret");
+  return querySecret === secret;
 }
 
 export async function GET(req: NextRequest) {
