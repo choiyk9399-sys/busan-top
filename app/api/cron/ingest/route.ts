@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { CINII_KEYWORDS, fetchCiniiPapers, normalizeCiniiEntry } from "@/lib/cinii";
+import { isCronAuthorized } from "@/lib/cron-auth";
 import { translateToKorean } from "@/lib/openrouter";
 import { getServiceSupabaseClient } from "@/lib/supabase";
 
@@ -17,19 +18,8 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function isAuthorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const authHeader = req.headers.get("authorization");
-  if (authHeader === `Bearer ${secret}`) return true;
-  // Vercel Cron은 Authorization 헤더로 인증하지만, 사람이 브라우저에서
-  // 수동으로 한 번 실행해볼 수 있도록 ?secret=... 쿼리파라미터도 허용한다.
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  return querySecret === secret;
-}
-
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
